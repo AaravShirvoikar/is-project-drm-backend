@@ -2,10 +2,12 @@ package storage
 
 import (
 	"context"
-	"crypto/sha256"
+	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"io"
 	"log"
+	"time"
 
 	"github.com/AaravShirvoikar/is-project-drm-backend/internal/models"
 	"github.com/minio/minio-go/v7"
@@ -44,34 +46,38 @@ func NewFileStorage(endpoint, accessKeyID, secretAccessKey, bucketName string, u
 	return &FileStorage{minioClient: minioClient, bucketName: bucketName}, nil
 }
 
-func (s *FileStorage) UploadFile(ctx context.Context, reader io.Reader, size int64) (*models.File, error) {
-	hash := sha256.New()
-	if _, err := io.Copy(hash, reader); err != nil {
+func (s *FileStorage) UploadFile(ctx context.Context, reader io.Reader, ext string, size int64) (*models.File, error) {
+	fileId, err := generateUniqueFilename(ext)
+	if err != nil {
 		return nil, err
 	}
-	fileHash := hex.EncodeToString(hash.Sum(nil))
 
-	seeker, ok := reader.(io.Seeker)
-	if ok {
-		_, err := seeker.Seek(0, io.SeekStart)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	_, err := s.minioClient.PutObject(ctx, s.bucketName, fileHash, reader, size, minio.PutObjectOptions{ContentType: "application/octet-stream"})
+	_, err = s.minioClient.PutObject(ctx, s.bucketName, fileId, reader, size, minio.PutObjectOptions{ContentType: "application/octet-stream"})
 	if err != nil {
 		return nil, err
 	}
 
 	file := &models.File{
-		Hash: fileHash,
-		Size: size,
+		FileID: fileId,
+		Size:   size,
 	}
 
 	return file, nil
 }
 
-func (s *FileStorage) DownloadFile(ctx context.Context, fileHash string) (io.ReadCloser, error) {
-	return s.minioClient.GetObject(ctx, s.bucketName, fileHash, minio.GetObjectOptions{})
+func (s *FileStorage) DownloadFile(ctx context.Context, fileId string) (io.ReadCloser, error) {
+	return s.minioClient.GetObject(ctx, s.bucketName, fileId, minio.GetObjectOptions{})
+}
+
+func generateUniqueFilename(fileExtension string) (string, error) {
+	timestamp := time.Now().Format("20060102-150405")
+
+	randomBytes := make([]byte, 4)
+	if _, err := rand.Read(randomBytes); err != nil {
+		return "", err
+	}
+
+	randomString := hex.EncodeToString(randomBytes)
+
+	return fmt.Sprintf("%s-%s%s", timestamp, randomString, fileExtension), nil
 }

@@ -11,7 +11,7 @@ import (
 )
 
 type ContentService interface {
-	Create(content *models.Content, file io.Reader, fileSize int64) error
+	Create(content *models.Content, file io.Reader, fileExt string, fileSize int64) error
 }
 
 type contentService struct {
@@ -23,7 +23,7 @@ func NewContentService(contentRepo repositories.ContentRepository, storage *stor
 	return &contentService{contentRepo: contentRepo, storage: storage}
 }
 
-func (s *contentService) Create(content *models.Content, file io.Reader, fileSize int64) error {
+func (s *contentService) Create(content *models.Content, file io.Reader, fileExt string, fileSize int64) error {
 	if content.Title == "" {
 		return errors.New("content title cannot be empty")
 	}
@@ -31,12 +31,12 @@ func (s *contentService) Create(content *models.Content, file io.Reader, fileSiz
 		return errors.New("content price cannot be negative")
 	}
 
-	fileModel, err := s.storage.UploadFile(context.Background(), file, fileSize)
+	fileModel, err := s.storage.UploadFile(context.Background(), file, fileExt, fileSize)
 	if err != nil {
 		return err
 	}
 
-	content.FileHash = fileModel.Hash
+	content.FileID = fileModel.FileID
 	content.FileSize = fileModel.Size
 
 	err = s.contentRepo.Create(content)

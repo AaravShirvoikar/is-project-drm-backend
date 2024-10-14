@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"github.com/AaravShirvoikar/is-project-drm-backend/internal/models"
@@ -54,7 +55,9 @@ func (h *ContentHandler) CreateContent(w http.ResponseWriter, r *http.Request) {
 	content.CreatedAt = time.Now()
 	content.UpdatedAt = time.Now()
 
-	err = h.contentService.Create(&content, file, header.Size)
+	fileExtension := filepath.Ext(header.Filename)
+
+	err = h.contentService.Create(&content, file, fileExtension, header.Size)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

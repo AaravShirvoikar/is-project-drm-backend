@@ -21,12 +21,12 @@ func NewContentRepository(db *sql.DB) ContentRepository {
 }
 
 func (r *contentRepo) Create(content *models.Content) error {
-	query := `INSERT INTO content (title, description, creator_id, price, created_at, updated_at, file_hash, file_size)
+	query := `INSERT INTO content (title, description, creator_id, price, created_at, updated_at, file_id, file_size)
               VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
 
 	var id string
 	err := r.db.QueryRow(query, content.Title, content.Description, content.CreatorID,
-		content.Price, content.CreatedAt, content.UpdatedAt, content.FileHash, content.FileSize).Scan(&id)
+		content.Price, content.CreatedAt, content.UpdatedAt, content.FileID, content.FileSize).Scan(&id)
 	if err != nil {
 		return err
 	}
@@ -35,7 +35,7 @@ func (r *contentRepo) Create(content *models.Content) error {
 }
 
 func (r *contentRepo) List() ([]*models.Content, error) {
-	query := "SELECT id, title, description, creator_id, price, created_at, updated_at, file_hash, file_size FROM content"
+	query := "SELECT id, title, description, creator_id, price, created_at, updated_at, file_id, file_size FROM content"
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -46,7 +46,7 @@ func (r *contentRepo) List() ([]*models.Content, error) {
 	for rows.Next() {
 		var content models.Content
 		err := rows.Scan(&content.ContentID, &content.Title, &content.Description, &content.CreatorID,
-			&content.Price, &content.CreatedAt, &content.UpdatedAt, &content.FileHash, &content.FileSize)
+			&content.Price, &content.CreatedAt, &content.UpdatedAt, &content.FileID, &content.FileSize)
 		if err != nil {
 			return nil, err
 		}
@@ -61,12 +61,12 @@ func (r *contentRepo) List() ([]*models.Content, error) {
 }
 
 func (r *contentRepo) GetById(id string) (*models.Content, error) {
-	query := `SELECT id, title, description, creator_id, price, created_at, updated_at, file_hash, file_size
+	query := `SELECT id, title, description, creator_id, price, created_at, updated_at, file_id, file_size
               FROM content WHERE id = $1`
 
 	var content models.Content
 	err := r.db.QueryRow(query, id).Scan(&content.ContentID, &content.Title, &content.Description,
-		&content.CreatorID, &content.Price, &content.CreatedAt, &content.UpdatedAt, &content.FileHash,
+		&content.CreatorID, &content.Price, &content.CreatedAt, &content.UpdatedAt, &content.FileID,
 		&content.FileSize)
 	if err != nil {
 		return nil, err
