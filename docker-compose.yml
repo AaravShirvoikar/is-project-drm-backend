@@ -10,5 +10,19 @@ services:
     volumes:
       - psql_volume:/var/lib/postgresql/data
 
+  minio:
+    image: minio/minio
+    ports:
+      - "${MINIO_API_PORT:-9000}:9000"
+      - "${MINIO_CONSOLE_PORT:-9001}:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_SECRET_KEY}
+    command: server /data --console-address ":9001"
+    volumes:
+      - minio_volume:/data
+
 volumes:
   psql_volume:
+  minio_volume:
+
