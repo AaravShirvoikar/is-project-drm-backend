@@ -31,13 +31,13 @@ func (s *contentService) Create(content *models.Content, file io.Reader, fileExt
 		return errors.New("content price cannot be negative")
 	}
 
-	fileModel, err := s.storage.UploadFile(context.Background(), file, fileExt, fileSize)
+	fileId, err := s.storage.UploadFile(context.Background(), file, fileExt, fileSize)
 	if err != nil {
 		return err
 	}
 
-	content.FileID = fileModel.FileID
-	content.FileSize = fileModel.Size
+	content.FileID = fileId
+	content.FileSize = fileSize
 
 	err = s.contentRepo.Create(content)
 	if err != nil {

@@ -17,8 +17,3 @@ type Content struct {
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
-
-type File struct {
-	FileID string `json:"file_id"`
-	Size   int64  `json:"size"`
-}

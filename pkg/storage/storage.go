@@ -9,7 +9,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/AaravShirvoikar/is-project-drm-backend/internal/models"
 	"github.com/minio/minio-go/v7"
 	"github.com/minio/minio-go/v7/pkg/credentials"
 )
@@ -46,23 +45,18 @@ func NewFileStorage(endpoint, accessKeyID, secretAccessKey, bucketName string, u
 	return &FileStorage{minioClient: minioClient, bucketName: bucketName}, nil
 }
 
-func (s *FileStorage) UploadFile(ctx context.Context, reader io.Reader, ext string, size int64) (*models.File, error) {
+func (s *FileStorage) UploadFile(ctx context.Context, reader io.Reader, ext string, size int64) (string, error) {
 	fileId, err := generateUniqueFilename(ext)
 	if err != nil {
-		return nil, err
+		return "",  err
 	}
 
 	_, err = s.minioClient.PutObject(ctx, s.bucketName, fileId, reader, size, minio.PutObjectOptions{ContentType: "application/octet-stream"})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	file := &models.File{
-		FileID: fileId,
-		Size:   size,
-	}
-
-	return file, nil
+	return fileId, nil
 }
 
 func (s *FileStorage) DownloadFile(ctx context.Context, fileId string) (io.ReadCloser, error) {
