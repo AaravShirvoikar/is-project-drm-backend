@@ -63,12 +63,6 @@ func (h *ContentHandler) CreateContent(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
-	
-	err = h.licenseService.Generate(id.String(), content.ContentID.String(), time.Now())
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
 
 	w.WriteHeader(http.StatusCreated)
 }
