@@ -56,12 +56,14 @@ func main() {
 
 	userRepo := repositories.NewUserRepository(db)
 	contentRepo := repositories.NewContentRepository(db)
+	licenseRepo := repositories.NewLicenseRepository(db)
 
 	userService := services.NewUserService(userRepo)
 	contentService := services.NewContentService(contentRepo, fileStorage)
+	licenseService := services.NewLicenseService(licenseRepo)
 
 	userHandler := handlers.NewUserHandler(userService)
-	contentHandler := handlers.NewContentHandler(contentService)
+	contentHandler := handlers.NewContentHandler(contentService, licenseService)
 
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
