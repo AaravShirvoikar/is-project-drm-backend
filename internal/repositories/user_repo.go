@@ -1,7 +1,6 @@
 package repositories
 
 import (
-	"context"
 	"database/sql"
 
 	"github.com/AaravShirvoikar/is-project-drm-backend/internal/models"
@@ -21,9 +20,9 @@ func NewUserRepository(db *sql.DB) UserRepository {
 }
 
 func (r *userRepo) Create(user *models.User) error {
-	query := "INSERT INTO users (email, name, password) VALUES ($1, $2, $3) RETURNING id;"
+	query := "INSERT INTO users (id, email, name, password) VALUES ($1, $2, $3, $4)"
 
-	err := r.db.QueryRowContext(context.Background(), query, user.Email, user.UserName, user.Password).Scan(&user.UserID)
+	_, err := r.db.Exec(query, user.UserID, user.Email, user.UserName, user.Password)
 	if err != nil {
 		return err
 	}

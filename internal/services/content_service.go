@@ -8,6 +8,7 @@ import (
 	"github.com/AaravShirvoikar/is-project-drm-backend/internal/models"
 	"github.com/AaravShirvoikar/is-project-drm-backend/internal/repositories"
 	"github.com/AaravShirvoikar/is-project-drm-backend/pkg/storage"
+	"github.com/gofrs/uuid"
 )
 
 type ContentService interface {
@@ -35,6 +36,12 @@ func (s *contentService) Create(content *models.Content, file io.Reader, fileExt
 	if err != nil {
 		return err
 	}
+
+	contentId, err := uuid.NewV4()
+	if err != nil {
+		return err
+	}
+	content.ContentID = contentId
 
 	content.FileID = fileId
 	content.FileSize = fileSize

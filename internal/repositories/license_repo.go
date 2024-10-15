@@ -4,7 +4,6 @@ import (
 	"database/sql"
 
 	"github.com/AaravShirvoikar/is-project-drm-backend/internal/models"
-	"github.com/gofrs/uuid"
 )
 
 type LicenseRepository interface {
@@ -22,16 +21,13 @@ func NewLicenseRepository(db *sql.DB) LicenseRepository {
 }
 
 func (r *licenseRepo) Create(license *models.License) error {
-	query := `INSERT INTO licenses (user_id, content_id, expires_at, created_at)
-			VALUES ($1, $2, $3, $4)	RETURNING id`
+	query := `INSERT INTO licenses (id, user_id, content_id, expires_at, created_at)
+			VALUES ($1, $2, $3, $4, $5)`
 
-	var id uuid.UUID
-	err := r.db.QueryRow(query, license.UserID, license.ContentID, license.ExpiresAt, license.CreatedAt).Scan(&id)
+	_, err := r.db.Exec(query, license.LicenseID, license.UserID, license.ContentID, license.ExpiresAt, license.CreatedAt)
 	if err != nil {
 		return err
 	}
-
-	license.LicenseID = id
 
 	return nil
 }

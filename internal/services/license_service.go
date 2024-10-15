@@ -10,7 +10,7 @@ import (
 )
 
 type LicenseService interface {
-	Generate(userId, contentId string, expiresAt time.Time) (*models.License, error)
+	Generate(userId, contentId string, expiresAt time.Time) error
 	Verify(userId, contentId string) (bool, error)
 	Revoke(licenseId string) error
 }
@@ -23,20 +23,26 @@ func NewLicenseService(licenseRepo repositories.LicenseRepository) LicenseServic
 	return &licenseService{licenseRepo: licenseRepo}
 }
 
-func (s *licenseService) Generate(userId, contentId string, expiresAt time.Time) (*models.License, error) {
+func (s *licenseService) Generate(userId, contentId string, expiresAt time.Time) error {
+	licenseId, err := uuid.NewV4()
+	if err != nil {
+		return err
+	}
+	
 	license := &models.License{
+		LicenseID: licenseId,
 		UserID:    uuid.FromStringOrNil(userId),
 		ContentID: uuid.FromStringOrNil(contentId),
 		ExpiresAt: expiresAt,
 		CreatedAt: time.Now(),
 	}
 
-	err := s.licenseRepo.Create(license)
+	err = s.licenseRepo.Create(license)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return license, nil
+	return nil
 }
 
 func (s *licenseService) Verify(userId, contentId string) (bool, error) {
