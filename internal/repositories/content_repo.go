@@ -21,12 +21,11 @@ func NewContentRepository(db *sql.DB) ContentRepository {
 }
 
 func (r *contentRepo) Create(content *models.Content) error {
-	query := `INSERT INTO content (title, description, creator_id, price, created_at, updated_at, file_id, file_size)
-              VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`
+	query := `INSERT INTO content (id, title, description, creator_id, price, created_at, updated_at, file_id, file_size)
+              VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
 
-	var id string
-	err := r.db.QueryRow(query, content.Title, content.Description, content.CreatorID,
-		content.Price, content.CreatedAt, content.UpdatedAt, content.FileID, content.FileSize).Scan(&id)
+	_, err := r.db.Exec(query, content.ContentID, content.Title, content.Description, content.CreatorID,
+		content.Price, content.CreatedAt, content.UpdatedAt, content.FileID, content.FileSize)
 	if err != nil {
 		return err
 	}

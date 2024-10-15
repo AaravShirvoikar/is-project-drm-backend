@@ -6,6 +6,7 @@ import (
 	"github.com/AaravShirvoikar/is-project-drm-backend/internal/models"
 	"github.com/AaravShirvoikar/is-project-drm-backend/internal/repositories"
 	"github.com/AaravShirvoikar/is-project-drm-backend/pkg/auth"
+	"github.com/gofrs/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -23,6 +24,12 @@ func NewUserService(userRepo repositories.UserRepository) UserService {
 }
 
 func (s *userService) Register(user *models.User) error {
+	userId, err := uuid.NewV4()
+	if err != nil {
+		return err
+	}
+	user.UserID = userId
+
 	hashedPassword, err := hashPassword(user.Password)
 	if err != nil {
 		return err
