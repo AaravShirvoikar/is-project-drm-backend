@@ -3,11 +3,11 @@ package database
 import (
 	"database/sql"
 
-	_ "github.com/lib/pq"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-func NewDatabase(connStr string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", connStr)
+func NewDatabase(connstr string) (*sql.DB, error) {
+	db, err := sql.Open("pgx", connstr)
 	if err != nil {
 		return nil, err
 	}
