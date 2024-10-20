@@ -12,12 +12,14 @@ import (
 )
 
 type ContentHandler struct {
-	contentService services.ContentService
-	licenseService services.LicenseService
+	contentService    services.ContentService
+	licenseService    services.LicenseService
+	sessionKeyService services.SessionKeyService
 }
 
-func NewContentHandler(contentService services.ContentService, licenseService services.LicenseService) *ContentHandler {
-	return &ContentHandler{contentService: contentService, licenseService: licenseService}
+func NewContentHandler(contentService services.ContentService, licenseService services.LicenseService,
+	sessionKeyService services.SessionKeyService) *ContentHandler {
+	return &ContentHandler{contentService: contentService, licenseService: licenseService, sessionKeyService: sessionKeyService}
 }
 
 func (h *ContentHandler) CreateContent(w http.ResponseWriter, r *http.Request) {
