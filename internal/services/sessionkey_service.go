@@ -48,6 +48,8 @@ func (s *sessionKeyService) GetOrCreate(userId, contentId string) ([]byte, error
 	}
 
 	if sessionKey.ExpiresAt.Before(time.Now()) {
+		s.sessionKeyRepo.Delete(sessionKey.KeyID.String())
+		
 		key, err := generateSessionKey()
 		if err != nil {
 			return nil, err
