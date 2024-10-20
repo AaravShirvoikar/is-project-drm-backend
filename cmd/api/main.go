@@ -28,6 +28,7 @@ func main() {
 		dbPort     = os.Getenv("DB_PORT")
 		host       = os.Getenv("DB_HOST")
 		jwtSecret  = os.Getenv("JWT_SECRET")
+		minioHost  = os.Getenv("MINIO_HOST")
 		minioPort  = os.Getenv("MINIO_API_PORT")
 		accessKey  = os.Getenv("MINIO_ACCESS_KEY")
 		secretKey  = os.Getenv("MINIO_SECRET_KEY")
@@ -42,7 +43,7 @@ func main() {
 	defer db.Close()
 
 	fileStorage, err := storage.NewFileStorage(
-		fmt.Sprintf("localhost:%s", minioPort),
+		fmt.Sprintf("%s:%s", minioHost, minioPort),
 		accessKey,
 		secretKey,
 		bucketName,
