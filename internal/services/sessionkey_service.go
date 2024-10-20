@@ -2,7 +2,6 @@ package services
 
 import (
 	"crypto/rand"
-	"encoding/hex"
 	"time"
 
 	"github.com/AaravShirvoikar/is-project-drm-backend/internal/models"
@@ -26,16 +25,20 @@ func (s *sessionKeyService) GetOrCreate(userId, contentId string) ([]byte, error
 	sessionKey, err := s.sessionKeyRepo.Get(userId, contentId)
 	if err != nil {
 		if err == repositories.ErrSessionKeyNotFound {
+			key, err := generateSessionKey()
+			if err != nil {
+				return nil, err
+			}
 			newSessionKey := &models.SessionKey{
 				KeyID:      uuid.Must(uuid.NewV4()),
 				UserID:     uuid.Must(uuid.FromString(userId)),
 				ContentID:  uuid.Must(uuid.FromString(contentId)),
-				SessionKey: []byte(generateSessionKey()),
+				SessionKey: key,
 				CreatedAt:  time.Now(),
 				ExpiresAt:  time.Now().Add(24 * time.Hour),
 			}
 
-			err := s.sessionKeyRepo.Create(newSessionKey)
+			err = s.sessionKeyRepo.Create(newSessionKey)
 			if err != nil {
 				return nil, err
 			}
@@ -45,11 +48,15 @@ func (s *sessionKeyService) GetOrCreate(userId, contentId string) ([]byte, error
 	}
 
 	if sessionKey.ExpiresAt.Before(time.Now()) {
+		key, err := generateSessionKey()
+		if err != nil {
+			return nil, err
+		}
 		newSessionKey := &models.SessionKey{
 			KeyID:      uuid.Must(uuid.NewV4()),
 			UserID:     uuid.Must(uuid.FromString(userId)),
 			ContentID:  uuid.Must(uuid.FromString(contentId)),
-			SessionKey: []byte(generateSessionKey()),
+			SessionKey: key,
 			CreatedAt:  time.Now(),
 			ExpiresAt:  time.Now().Add(24 * time.Hour),
 		}
@@ -64,13 +71,13 @@ func (s *sessionKeyService) GetOrCreate(userId, contentId string) ([]byte, error
 	return sessionKey.SessionKey, nil
 }
 
-func generateSessionKey() string {
+func generateSessionKey() ([]byte, error) {
 	key := make([]byte, 32)
 
 	_, err := rand.Read(key)
 	if err != nil {
-		return ""
+		return nil, err
 	}
 
-	return hex.EncodeToString(key)
+	return key, nil
 }
