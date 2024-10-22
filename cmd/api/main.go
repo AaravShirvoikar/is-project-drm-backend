@@ -26,16 +26,14 @@ func main() {
 		password   = os.Getenv("DB_PASSWORD")
 		username   = os.Getenv("DB_USERNAME")
 		dbPort     = os.Getenv("DB_PORT")
-		host       = os.Getenv("DB_HOST")
 		jwtSecret  = os.Getenv("JWT_SECRET")
-		minioHost  = os.Getenv("MINIO_HOST")
 		minioPort  = os.Getenv("MINIO_API_PORT")
 		accessKey  = os.Getenv("MINIO_ACCESS_KEY")
 		secretKey  = os.Getenv("MINIO_SECRET_KEY")
 		bucketName = os.Getenv("MINIO_BUCKET_NAME")
 	)
 
-	connStr := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable", username, password, host, dbPort, dbname)
+	connStr := fmt.Sprintf("postgres://%s:%s@localhost:%s/%s?sslmode=disable", username, password, dbPort, dbname)
 	db, err := database.NewDatabase(connStr)
 	if err != nil {
 		log.Fatalf("failed to connect to database: %v", err)
@@ -43,7 +41,7 @@ func main() {
 	defer db.Close()
 
 	fileStorage, err := storage.NewFileStorage(
-		fmt.Sprintf("%s:%s", minioHost, minioPort),
+		fmt.Sprintf("localhost:%s", minioPort),
 		accessKey,
 		secretKey,
 		bucketName,
