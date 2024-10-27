@@ -44,7 +44,7 @@ func (h *UserHandler) Login(w http.ResponseWriter, r *http.Request) {
 
 	token, err := h.userService.Authenticate(creds.Email, creds.Password)
 	if err != nil {
-		http.Error(w, "invalid credentials", http.StatusUnauthorized)
+		http.Error(w, "Invalid credentials", http.StatusUnauthorized)
 		return
 	}
 

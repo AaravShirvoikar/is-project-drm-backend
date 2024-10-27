@@ -43,7 +43,7 @@ func (h *ContentHandler) CreateContent(w http.ResponseWriter, r *http.Request) {
 	var content models.Content
 	err = json.Unmarshal([]byte(data), &content)
 	if err != nil {
-		http.Error(w, "Invalid content metadata JSON", http.StatusBadRequest)
+		http.Error(w, "Invalid content data", http.StatusBadRequest)
 		return
 	}
 
