@@ -29,10 +29,16 @@ func (s *sessionKeyService) GetOrCreate(userId, contentId string) ([]byte, error
 			if err != nil {
 				return nil, err
 			}
+
+			keyId, err := uuid.NewV4()
+			if err != nil {
+				return nil, err
+			}
+
 			newSessionKey := &models.SessionKey{
-				KeyID:      uuid.Must(uuid.NewV4()),
-				UserID:     uuid.Must(uuid.FromString(userId)),
-				ContentID:  uuid.Must(uuid.FromString(contentId)),
+				KeyID:      keyId,
+				UserID:     uuid.FromStringOrNil(userId),
+				ContentID:  uuid.FromStringOrNil(contentId),
 				SessionKey: key,
 				CreatedAt:  time.Now(),
 				ExpiresAt:  time.Now().Add(24 * time.Hour),
