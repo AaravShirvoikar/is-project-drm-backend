@@ -24,7 +24,7 @@ func NewSessionKeyService(sessionKeyRepo repositories.SessionKeyRepository) Sess
 func (s *sessionKeyService) GetOrCreate(userId, contentId string) ([]byte, error) {
 	sessionKey, err := s.sessionKeyRepo.Get(userId, contentId)
 	if err != nil {
-		if err == repositories.ErrSessionKeyNotFound {
+		if err.Error() == "session key not found" {
 			key, err := generateSessionKey()
 			if err != nil {
 				return nil, err
@@ -49,7 +49,7 @@ func (s *sessionKeyService) GetOrCreate(userId, contentId string) ([]byte, error
 
 	if sessionKey.ExpiresAt.Before(time.Now()) {
 		s.sessionKeyRepo.Delete(sessionKey.KeyID.String())
-		
+
 		key, err := generateSessionKey()
 		if err != nil {
 			return nil, err

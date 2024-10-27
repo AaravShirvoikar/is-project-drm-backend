@@ -21,8 +21,6 @@ func NewSessionKeyRepo(db *sql.DB) SessionKeyRepository {
 	return &sessionKeyRepo{db: db}
 }
 
-var ErrSessionKeyNotFound = errors.New("session key not found")
-
 func (r *sessionKeyRepo) Create(sessionKey *models.SessionKey) error {
 	query := `INSERT INTO session_keys (id, user_id, content_id, session_key, expires_at, created_at)
 			VALUES ($1, $2, $3, $4, $5, $6)`
@@ -45,7 +43,7 @@ func (r *sessionKeyRepo) Get(userId, contentId string) (*models.SessionKey, erro
 	err := row.Scan(&sessionKey.KeyID, &sessionKey.UserID, &sessionKey.ContentID, &sessionKey.SessionKey, &sessionKey.ExpiresAt, &sessionKey.CreatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, ErrSessionKeyNotFound
+			return nil, errors.New("session key not found")
 		}
 		return nil, err
 	}
