@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"path/filepath"
 	"time"
@@ -93,7 +92,6 @@ func (h *ContentHandler) ListContent(w http.ResponseWriter, r *http.Request) {
 		filteredContents[i].Title = content.Title
 		filteredContents[i].Description = content.Description
 		isPurchased := h.licenseService.Verify(id, content.ContentID.String())
-		log.Println(content.CreatorID.String(), id)
 		if content.CreatorID.String() == id {
 			isPurchased = true
 		}
