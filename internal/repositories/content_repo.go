@@ -8,7 +8,7 @@ import (
 
 type ContentRepository interface {
 	Create(content *models.Content) error
-	List() ([]*models.Content, error)
+	GetAll() ([]*models.Content, error)
 	GetById(id string) (*models.Content, error)
 }
 
@@ -33,8 +33,8 @@ func (r *contentRepo) Create(content *models.Content) error {
 	return nil
 }
 
-func (r *contentRepo) List() ([]*models.Content, error) {
-	query := "SELECT id, title, description, creator_id, price, created_at, updated_at, file_id, file_size FROM content"
+func (r *contentRepo) GetAll() ([]*models.Content, error) {
+	query := "SELECT id, title, description FROM content"
 	rows, err := r.db.Query(query)
 	if err != nil {
 		return nil, err
@@ -44,8 +44,7 @@ func (r *contentRepo) List() ([]*models.Content, error) {
 	var contents []*models.Content
 	for rows.Next() {
 		var content models.Content
-		err := rows.Scan(&content.ContentID, &content.Title, &content.Description, &content.CreatorID,
-			&content.Price, &content.CreatedAt, &content.UpdatedAt, &content.FileID, &content.FileSize)
+		err := rows.Scan(&content.ContentID, &content.Title, &content.Description)
 		if err != nil {
 			return nil, err
 		}

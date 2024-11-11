@@ -13,6 +13,7 @@ import (
 
 type ContentService interface {
 	Create(content *models.Content, file io.Reader, fileExt string, fileSize int64) error
+	List() ([]*models.Content, error)
 }
 
 type contentService struct {
@@ -52,4 +53,8 @@ func (s *contentService) Create(content *models.Content, file io.Reader, fileExt
 	}
 
 	return nil
+}
+
+func (s *contentService) List() ([]*models.Content, error) {
+	return s.contentRepo.GetAll()
 }

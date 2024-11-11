@@ -68,3 +68,25 @@ func (h *ContentHandler) CreateContent(w http.ResponseWriter, r *http.Request) {
 
 	w.WriteHeader(http.StatusCreated)
 }
+
+func (h *ContentHandler) ListContent(w http.ResponseWriter, r *http.Request) {
+	contents, err := h.contentService.List()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	filteredContents := make([]struct {
+		ID          uuid.UUID `json:"content_id"`
+		Title       string    `json:"title"`
+		Description string    `json:"description"`
+	}, len(contents))
+
+	for i, content := range contents {
+		filteredContents[i].ID = content.ContentID
+		filteredContents[i].Title = content.Title
+		filteredContents[i].Description = content.Description
+	}
+
+	json.NewEncoder(w).Encode(filteredContents)
+}

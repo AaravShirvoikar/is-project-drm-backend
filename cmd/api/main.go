@@ -89,6 +89,7 @@ func main() {
 	contentRouter.Use(auth.AuthenticateToken)
 
 	contentRouter.Post("/create", contentHandler.CreateContent)
+	contentRouter.Get("/list", contentHandler.ListContent)
 
 	router.Mount("/content", contentRouter)
 
