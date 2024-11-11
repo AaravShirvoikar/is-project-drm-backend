@@ -1,6 +1,7 @@
 package services
 
 import (
+	"database/sql"
 	"errors"
 	"time"
 
@@ -11,7 +12,7 @@ import (
 
 type LicenseService interface {
 	Generate(userId, contentId string, expiresAt time.Time) error
-	Verify(userId, contentId string) (bool, error)
+	Verify(userId, contentId string) bool
 	Revoke(licenseId string) error
 }
 
@@ -45,21 +46,23 @@ func (s *licenseService) Generate(userId, contentId string, expiresAt time.Time)
 	return nil
 }
 
-func (s *licenseService) Verify(userId, contentId string) (bool, error) {
+func (s *licenseService) Verify(userId, contentId string) bool {
 	license, err := s.licenseRepo.Get(userId, contentId)
 	if err != nil {
-		return false, err
+		if !errors.Is(err, sql.ErrNoRows) {
+			return false
+		}
 	}
 
 	if license == nil {
-		return false, errors.New("license not found")
+		return false
 	}
 
 	if license.ExpiresAt.Before(time.Now()) {
-		return false, errors.New("license has expired")
+		return false
 	}
 
-	return true, nil
+	return true
 }
 
 func (s *licenseService) Revoke(licenseId string) error {

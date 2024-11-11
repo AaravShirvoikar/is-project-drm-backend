@@ -13,6 +13,7 @@ import (
 
 type ContentService interface {
 	Create(content *models.Content, file io.Reader, fileExt string, fileSize int64) error
+	Get(id string) (*models.Content, []byte, error)
 	List() ([]*models.Content, error)
 }
 
@@ -57,4 +58,24 @@ func (s *contentService) Create(content *models.Content, file io.Reader, fileExt
 
 func (s *contentService) List() ([]*models.Content, error) {
 	return s.contentRepo.GetAll()
+}
+
+func (s *contentService) Get(id string) (*models.Content, []byte, error) {
+    content, err := s.contentRepo.GetById(id)
+    if err != nil {
+        return nil, nil, err
+    }
+
+    file, err := s.storage.DownloadFile(context.Background(), content.FileID)
+    if err != nil {
+        return nil, nil, err
+    }
+    defer file.Close()
+
+    fileContent, err := io.ReadAll(file)
+    if err != nil {
+        return nil, nil, err
+    }
+
+    return content, fileContent, nil
 }

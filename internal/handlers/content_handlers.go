@@ -1,13 +1,17 @@
 package handlers
 
 import (
+	"bytes"
 	"encoding/json"
+	"fmt"
+	"log"
 	"net/http"
 	"path/filepath"
 	"time"
 
 	"github.com/AaravShirvoikar/is-project-drm-backend/internal/models"
 	"github.com/AaravShirvoikar/is-project-drm-backend/internal/services"
+	"github.com/go-chi/chi"
 	"github.com/gofrs/uuid"
 )
 
@@ -70,6 +74,7 @@ func (h *ContentHandler) CreateContent(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *ContentHandler) ListContent(w http.ResponseWriter, r *http.Request) {
+	id := r.Context().Value("id").(string)
 	contents, err := h.contentService.List()
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -77,16 +82,64 @@ func (h *ContentHandler) ListContent(w http.ResponseWriter, r *http.Request) {
 	}
 
 	filteredContents := make([]struct {
-		ID          uuid.UUID `json:"content_id"`
+		Id          uuid.UUID `json:"content_id"`
 		Title       string    `json:"title"`
 		Description string    `json:"description"`
+		Purchased   bool      `json:"purchased"`
 	}, len(contents))
 
 	for i, content := range contents {
-		filteredContents[i].ID = content.ContentID
+		filteredContents[i].Id = content.ContentID
 		filteredContents[i].Title = content.Title
 		filteredContents[i].Description = content.Description
+		isPurchased := h.licenseService.Verify(id, content.ContentID.String())
+		log.Println(content.CreatorID.String(), id)
+		if content.CreatorID.String() == id {
+			isPurchased = true
+		}
+		filteredContents[i].Purchased = isPurchased
 	}
 
 	json.NewEncoder(w).Encode(filteredContents)
+}
+
+func (h *ContentHandler) PurchaseContent(w http.ResponseWriter, r *http.Request) {
+	id := r.Context().Value("id").(string)
+	contentId := chi.URLParam(r, "id")
+
+	err := h.licenseService.Generate(id, contentId, time.Now().Add(time.Hour*24))
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *ContentHandler) GetContent(w http.ResponseWriter, r *http.Request) {
+	id := r.Context().Value("id").(string)
+	contentId := chi.URLParam(r, "id")
+
+	content, fileContent, err := h.contentService.Get(contentId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	isValidLicense := h.licenseService.Verify(id, contentId)
+
+	if content.CreatorID.String() == id {
+		isValidLicense = true
+	}
+
+	if !isValidLicense {
+		http.Error(w, "Invalid license", http.StatusForbidden)
+		return
+	}
+
+	w.Header().Set("Content-Type", "video/mp4")
+	w.Header().Set("Content-Disposition", "inline; filename=\"video.mp4\"")
+	w.Header().Set("Content-Length", fmt.Sprintf("%d", len(fileContent)))
+
+	http.ServeContent(w, r, "video.mp4", content.UpdatedAt, bytes.NewReader(fileContent))
 }

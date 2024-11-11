@@ -90,6 +90,8 @@ func main() {
 
 	contentRouter.Post("/create", contentHandler.CreateContent)
 	contentRouter.Get("/list", contentHandler.ListContent)
+	contentRouter.Post("/purchase/{id}", contentHandler.PurchaseContent)
+	contentRouter.Get("/get/{id}", contentHandler.GetContent)
 
 	router.Mount("/content", contentRouter)
 

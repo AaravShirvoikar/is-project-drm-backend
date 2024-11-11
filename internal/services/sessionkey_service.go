@@ -2,6 +2,8 @@ package services
 
 import (
 	"crypto/rand"
+	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/AaravShirvoikar/is-project-drm-backend/internal/models"
@@ -24,7 +26,7 @@ func NewSessionKeyService(sessionKeyRepo repositories.SessionKeyRepository) Sess
 func (s *sessionKeyService) GetOrCreate(userId, contentId string) ([]byte, error) {
 	sessionKey, err := s.sessionKeyRepo.Get(userId, contentId)
 	if err != nil {
-		if err.Error() == "session key not found" {
+		if errors.Is(err, sql.ErrNoRows) {
 			key, err := generateSessionKey()
 			if err != nil {
 				return nil, err

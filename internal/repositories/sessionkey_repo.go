@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"database/sql"
-	"errors"
 
 	"github.com/AaravShirvoikar/is-project-drm-backend/internal/models"
 )
@@ -42,9 +41,6 @@ func (r *sessionKeyRepo) Get(userId, contentId string) (*models.SessionKey, erro
 	var sessionKey models.SessionKey
 	err := row.Scan(&sessionKey.KeyID, &sessionKey.UserID, &sessionKey.ContentID, &sessionKey.SessionKey, &sessionKey.ExpiresAt, &sessionKey.CreatedAt)
 	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, errors.New("session key not found")
-		}
 		return nil, err
 	}
 
