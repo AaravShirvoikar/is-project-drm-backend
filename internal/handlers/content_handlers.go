@@ -74,7 +74,7 @@ func (h *ContentHandler) CreateContent(w http.ResponseWriter, r *http.Request) {
 	} else {
 		w.WriteHeader(http.StatusConflict)
 	}
-	
+
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(struct {
 		Created    bool    `json:"created"`
@@ -99,6 +99,7 @@ func (h *ContentHandler) ListContent(w http.ResponseWriter, r *http.Request) {
 		Id          uuid.UUID `json:"content_id"`
 		Title       string    `json:"title"`
 		Description string    `json:"description"`
+		Price       float64   `json:"price"`
 		Purchased   bool      `json:"purchased"`
 	}, len(contents))
 
@@ -106,6 +107,7 @@ func (h *ContentHandler) ListContent(w http.ResponseWriter, r *http.Request) {
 		filteredContents[i].Id = content.ContentID
 		filteredContents[i].Title = content.Title
 		filteredContents[i].Description = content.Description
+		filteredContents[i].Price = content.Price
 		isPurchased := h.licenseService.Verify(id, content.ContentID.String())
 		if content.CreatorID.String() == id {
 			isPurchased = true
@@ -139,9 +141,9 @@ func (h *ContentHandler) GetContentData(w http.ResponseWriter, r *http.Request) 
 	}
 
 	json.NewEncoder(w).Encode(struct {
-		ContentId   string    `json:"content_id"`
-		Title       string    `json:"title"`
-		Description string    `json:"description"`
+		ContentId   string `json:"content_id"`
+		Title       string `json:"title"`
+		Description string `json:"description"`
 	}{
 		ContentId:   content.ContentID.String(),
 		Title:       content.Title,
