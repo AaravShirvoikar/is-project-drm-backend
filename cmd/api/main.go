@@ -31,6 +31,7 @@ func main() {
 		accessKey  = os.Getenv("MINIO_ACCESS_KEY")
 		secretKey  = os.Getenv("MINIO_SECRET_KEY")
 		bucketName = os.Getenv("MINIO_BUCKET_NAME")
+		similarURL = os.Getenv("SIMILARITY_CHECK_URL")
 	)
 
 	connStr := fmt.Sprintf("postgres://%s:%s@localhost:%s/%s?sslmode=disable", username, password, dbPort, dbname)
@@ -59,7 +60,7 @@ func main() {
 	sessionKeyRepo := repositories.NewSessionKeyRepo(db)
 
 	userService := services.NewUserService(userRepo)
-	contentService := services.NewContentService(contentRepo, fileStorage)
+	contentService := services.NewContentService(contentRepo, fileStorage, similarURL)
 	licenseService := services.NewLicenseService(licenseRepo)
 	sessionKeyService := services.NewSessionKeyService(sessionKeyRepo)
 
@@ -91,7 +92,8 @@ func main() {
 	contentRouter.Post("/create", contentHandler.CreateContent)
 	contentRouter.Get("/list", contentHandler.ListContent)
 	contentRouter.Post("/purchase/{id}", contentHandler.PurchaseContent)
-	contentRouter.Get("/get/{id}", contentHandler.GetContent)
+	contentRouter.Get("/get/{id}", contentHandler.GetContentData)
+	contentRouter.Get("/stream/{id}", contentHandler.GetContent)
 
 	router.Mount("/content", contentRouter)
 

@@ -63,13 +63,28 @@ func (h *ContentHandler) CreateContent(w http.ResponseWriter, r *http.Request) {
 
 	fileExtension := filepath.Ext(header.Filename)
 
-	err = h.contentService.Create(&content, file, fileExtension, header.Size)
+	similarId, created, similarity, err := h.contentService.Create(&content, file, fileExtension, header.Size)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	if created {
+		w.WriteHeader(http.StatusCreated)
+	} else {
+		w.WriteHeader(http.StatusConflict)
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(struct {
+		Created    bool    `json:"created"`
+		SimilarID  string  `json:"similar_id"`
+		Similarity float64 `json:"similarity"`
+	}{
+		Created:    created,
+		SimilarID:  similarId,
+		Similarity: similarity,
+	})
 }
 
 func (h *ContentHandler) ListContent(w http.ResponseWriter, r *http.Request) {
@@ -112,6 +127,26 @@ func (h *ContentHandler) PurchaseContent(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *ContentHandler) GetContentData(w http.ResponseWriter, r *http.Request) {
+	contentId := chi.URLParam(r, "id")
+
+	content, _, err := h.contentService.Get(contentId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(struct {
+		ContentId   string    `json:"content_id"`
+		Title       string    `json:"title"`
+		Description string    `json:"description"`
+	}{
+		ContentId:   content.ContentID.String(),
+		Title:       content.Title,
+		Description: content.Description,
+	})
 }
 
 func (h *ContentHandler) GetContent(w http.ResponseWriter, r *http.Request) {
