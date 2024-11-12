@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"log"
 	"mime/multipart"
 	"net/http"
 	"path/filepath"
@@ -23,12 +24,13 @@ type ContentService interface {
 }
 
 type contentService struct {
-	contentRepo repositories.ContentRepository
-	storage     *storage.FileStorage
+	contentRepo        repositories.ContentRepository
+	storage            *storage.FileStorage
+	similarityCheckURL string
 }
 
-func NewContentService(contentRepo repositories.ContentRepository, storage *storage.FileStorage) ContentService {
-	return &contentService{contentRepo: contentRepo, storage: storage}
+func NewContentService(contentRepo repositories.ContentRepository, storage *storage.FileStorage, similarityCheckURL string) ContentService {
+	return &contentService{contentRepo: contentRepo, storage: storage, similarityCheckURL: similarityCheckURL}
 }
 
 func (s *contentService) Create(content *models.Content, file io.Reader, fileExt string, fileSize int64) (string, bool, float64, error) {
@@ -50,7 +52,9 @@ func (s *contentService) Create(content *models.Content, file io.Reader, fileExt
 		return "", false, 0, err
 	}
 
-	url := "http://localhost:8000/compare-video-bytes/"
+	
+	url := s.similarityCheckURL + "/compare-video-bytes"
+	log.Println(url)
 	payload := &bytes.Buffer{}
 	writer := multipart.NewWriter(payload)
 
