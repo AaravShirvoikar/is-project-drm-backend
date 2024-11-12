@@ -63,13 +63,30 @@ func (h *ContentHandler) CreateContent(w http.ResponseWriter, r *http.Request) {
 
 	fileExtension := filepath.Ext(header.Filename)
 
-	err = h.contentService.Create(&content, file, fileExtension, header.Size)
+	similarId, created, similarity, err := h.contentService.Create(&content, file, fileExtension, header.Size)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
+	if created {
+		w.WriteHeader(http.StatusCreated)
+	} else {
+		w.WriteHeader(http.StatusConflict)
+	}
+	
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(struct {
+		ContentID  string  `json:"content_id"`
+		Created    bool    `json:"created"`
+		SimilarID  string  `json:"similar_id"`
+		Similarity float64 `json:"similarity"`
+	}{
+		ContentID:  content.ContentID.String(),
+		Created:    created,
+		SimilarID:  similarId,
+		Similarity: similarity,
+	})
 }
 
 func (h *ContentHandler) ListContent(w http.ResponseWriter, r *http.Request) {
