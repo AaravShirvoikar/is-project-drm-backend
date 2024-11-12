@@ -77,12 +77,10 @@ func (h *ContentHandler) CreateContent(w http.ResponseWriter, r *http.Request) {
 	
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(struct {
-		ContentID  string  `json:"content_id"`
 		Created    bool    `json:"created"`
 		SimilarID  string  `json:"similar_id"`
 		Similarity float64 `json:"similarity"`
 	}{
-		ContentID:  content.ContentID.String(),
 		Created:    created,
 		SimilarID:  similarId,
 		Similarity: similarity,
@@ -129,6 +127,26 @@ func (h *ContentHandler) PurchaseContent(w http.ResponseWriter, r *http.Request)
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (h *ContentHandler) GetContentData(w http.ResponseWriter, r *http.Request) {
+	contentId := chi.URLParam(r, "id")
+
+	content, _, err := h.contentService.Get(contentId)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	json.NewEncoder(w).Encode(struct {
+		ContentId   string    `json:"content_id"`
+		Title       string    `json:"title"`
+		Description string    `json:"description"`
+	}{
+		ContentId:   content.ContentID.String(),
+		Title:       content.Title,
+		Description: content.Description,
+	})
 }
 
 func (h *ContentHandler) GetContent(w http.ResponseWriter, r *http.Request) {

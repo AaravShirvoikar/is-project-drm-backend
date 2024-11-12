@@ -91,7 +91,8 @@ func main() {
 	contentRouter.Post("/create", contentHandler.CreateContent)
 	contentRouter.Get("/list", contentHandler.ListContent)
 	contentRouter.Post("/purchase/{id}", contentHandler.PurchaseContent)
-	contentRouter.Get("/get/{id}", contentHandler.GetContent)
+	contentRouter.Get("/get/{id}", contentHandler.GetContentData)
+	contentRouter.Get("/stream/{id}", contentHandler.GetContent)
 
 	router.Mount("/content", contentRouter)
 
