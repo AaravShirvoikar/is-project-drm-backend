@@ -118,6 +118,32 @@ func (h *ContentHandler) ListContent(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(filteredContents)
 }
 
+func (h *ContentHandler) ListSelfContent(w http.ResponseWriter, r *http.Request) {
+	id := r.Context().Value("id").(string)
+	contents, err := h.contentService.List()
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	filteredContents := make([]struct {
+		Id          uuid.UUID `json:"content_id"`
+		Title       string    `json:"title"`
+		Description string    `json:"description"`
+		Price       float64   `json:"price"`
+	}, len(contents))
+
+	for i, content := range contents {
+		if id == content.CreatorID.String() {
+			filteredContents[i].Id = content.ContentID
+			filteredContents[i].Title = content.Title
+			filteredContents[i].Description = content.Description
+		}
+	}
+
+	json.NewEncoder(w).Encode(filteredContents)
+}
+
 func (h *ContentHandler) PurchaseContent(w http.ResponseWriter, r *http.Request) {
 	id := r.Context().Value("id").(string)
 	contentId := chi.URLParam(r, "id")
