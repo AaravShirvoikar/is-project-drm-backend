@@ -22,7 +22,14 @@ services:
     volumes:
       - minio_volume:/data
 
+  similarity_model:
+    build:
+      context: ./Similarity_model
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./Similarity_model:/app
+
 volumes:
   psql_volume:
   minio_volume:
-
