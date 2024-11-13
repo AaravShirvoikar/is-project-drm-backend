@@ -138,6 +138,7 @@ func (h *ContentHandler) ListSelfContent(w http.ResponseWriter, r *http.Request)
 			filteredContents[i].Id = content.ContentID
 			filteredContents[i].Title = content.Title
 			filteredContents[i].Description = content.Description
+			filteredContents[i].Price = content.Price
 		}
 	}
 
